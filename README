@@ -1,6 +1,4 @@
 README 
 ======
-
-Readme for videoprocessor 
-
-Will be updated soon.
+JOSM Plugin based on Photomapping plugin.
+Requiers plugin development environment to build it from code. Refer http://josm.openstreetmap.de/wiki/DevelopersGuide/DevelopingPlugins
