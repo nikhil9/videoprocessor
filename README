@@ -10,5 +10,5 @@ Using Plugin:
 *Further process will be added.
 
 ======
-Added class for cascadeDetect. 
-Still not image processing can be done as I am yet to successfully integrate opencv libs. 
+Added class for cascadeDetect and minor UI changes.
+Still no image processing can be done as I am yet to successfully integrate opencv libs. 
