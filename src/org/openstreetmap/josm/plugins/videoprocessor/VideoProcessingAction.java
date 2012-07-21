@@ -1,8 +1,6 @@
 package org.openstreetmap.josm.plugins.videoprocessor;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridBagLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -11,7 +9,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -26,6 +25,11 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JSlider;
+
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.gui.ExtendedDialog;
 import org.openstreetmap.josm.gui.PleaseWaitRunnable;
@@ -35,84 +39,98 @@ import org.openstreetmap.josm.gui.progress.*;
 import org.openstreetmap.josm.gui.layer.Layer.LayerAction;
 import org.openstreetmap.josm.gui.layer.geoimage.GeoImageLayer;
 import org.openstreetmap.josm.gui.layer.geoimage.ImageEntry;
+import org.openstreetmap.josm.gui.layer.geoimage.ImageViewerDialog;
 import org.openstreetmap.josm.tools.GBC;
 import org.openstreetmap.josm.tools.ImageProvider;
-import org.openstreetmap.josm.gui.layer.geoimage.ImageDisplay;
 import java.awt.geom.Dimension2D;
-import static com.googlecode.javacv.cpp.opencv_core.cvCircle;
-import static com.googlecode.javacv.cpp.opencv_core.cvCopy;
-import static com.googlecode.javacv.cpp.opencv_core.cvLine;
-import static com.googlecode.javacv.cpp.opencv_core.cvPoint;
-import static com.googlecode.javacv.cpp.opencv_core.cvPointFrom32f;
-import static com.googlecode.javacv.cpp.opencv_core.cvRect;
-import static com.googlecode.javacv.cpp.opencv_core.cvResetImageROI;
-import static com.googlecode.javacv.cpp.opencv_core.cvSetImageROI;
-import static com.googlecode.javacv.cpp.opencv_highgui.CV_LOAD_IMAGE_GRAYSCALE;
-import static com.googlecode.javacv.cpp.opencv_highgui.cvDestroyWindow;
-import static com.googlecode.javacv.cpp.opencv_highgui.cvLoadImage;
-import static com.googlecode.javacv.cpp.opencv_highgui.cvNamedWindow;
-import static com.googlecode.javacv.cpp.opencv_highgui.cvShowImage;
-import static com.googlecode.javacv.cpp.opencv_highgui.cvWaitKey;
-import static com.googlecode.javacv.cpp.opencv_imgproc.CV_GRAY2BGR;
-import static com.googlecode.javacv.cpp.opencv_imgproc.cvCvtColor;
-import imageProcessing.SampleMatch.sampleSettings;
-import com.googlecode.javacv.cpp.opencv_core.CvPoint;
-import com.googlecode.javacv.cpp.opencv_core.CvPoint2D32f;
-import com.googlecode.javacv.cpp.opencv_core.CvScalar;
-import com.googlecode.javacv.cpp.opencv_core.IplImage;
-import com.googlecode.javacv.cpp.opencv_features2d.CvSURFPoint;
-import com.googlecode.javacv.CanvasFrame;
 
-import imageProcessing.SampleMatch;
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_highgui.*;
+import static com.googlecode.javacv.cpp.opencv_imgproc.CV_BGR2GRAY;
+import static com.googlecode.javacv.cpp.opencv_imgproc.cvCvtColor;
+import static com.googlecode.javacv.cpp.opencv_legacy.*;
+import com.googlecode.javacv.cpp.opencv_core.*;
+import com.googlecode.javacv.cpp.opencv_highgui.*;
+import com.googlecode.javacv.cpp.opencv_legacy.*;
+import com.googlecode.javacv.cpp.opencv_objdetect.CascadeClassifier;
+import com.googlecode.javacv.CanvasFrame;
+import imageProcessing.*;
 
 class VideoProcessingAction extends AbstractAction implements LayerAction {
 	
 	final static boolean debug = false;
-    final static String KEEP_BACKUP = "plugins.videoprocessor.keep_backup";    
-    
-    public VideoProcessingAction() {
+	private JSlider timeline;
+	private JButton play,back,forward;
+	
+	public VideoProcessingAction() {
         super("Process Images");
     }
-    
+	
     @Override
 	public void actionPerformed(ActionEvent arg0) {
     	
     	GeoImageLayer layer = getLayer();
     	final List<ImageEntry> images = new ArrayList<ImageEntry>();
-    	for (ImageEntry e : layer.getImages()){
-    		if (e.getPos() != null && e.getGpsTime() != null){
-    			images.add(e);
-    		}
+    	for (ImageEntry e : layer.getImages()){   		
+    			images.add(e);   		
     	}
     	
     	final JPanel cont = new JPanel(new GridBagLayout());
-    	cont.add(new JLabel("Videoprocessor"));
     	
+    	GridBagConstraints c = new GridBagConstraints();
     	DefaultListModel listModel = new DefaultListModel();
     	DecimalFormat dFormatter = new DecimalFormat ("###0.000000");
     	
     	for(ImageEntry e : images){
-    		listModel.addElement(e.getFile().getAbsolutePath()+
-    				" ("+dFormatter.format(e.getPos().lat())+","+
-    				dFormatter.format(e.getPos().lon())+")");
+    		listModel.addElement(e.getFile().getAbsolutePath());
+    		cascadeDetect(e);
     	}
     	
+    	ImageViewerDialog.showImage(layer, images.get(0) );;
+    	        
+    	
+    	Canvas can = new Canvas(); 
     	JList entryList = new JList(listModel);
     	JScrollPane scroll = new JScrollPane(entryList);
-    	scroll.setPreferredSize(new Dimension(400, 400));
-    	cont.add(scroll);
+    	scroll.setPreferredSize(new Dimension(500, 250));
+    	c.fill = GridBagConstraints.CENTER ;
+        c.gridx = 1;
+        c.gridy = 0;
+    	cont.add(scroll, c);  
     	
-    	final JPanel settingsPanel = new JPanel(new GridBagLayout());
-    	settingsPanel.setBorder(BorderFactory.createTitledBorder("Settings"));
-    	cont.add(settingsPanel);
+    	 //cvNamedWindow("hello");
+        //cvWaitKey(0);
     	
-    	final JCheckBox backups = new JCheckBox("keep backup files", Main.pref.getBoolean(KEEP_BACKUP, true));
-        settingsPanel.add(backups);
-    	  	        
-        int result = new ExtendedDialog(
+    	/*timeline = new JSlider(0,500,0);
+        timeline.setMajorTickSpacing(5);
+        timeline.setMinorTickSpacing(2);
+        timeline.setPaintTicks(true);
+        play= new JButton("play");*/
+        back= new JButton("<");
+        forward= new JButton(">");
+        c.fill = GridBagConstraints.EAST;
+        c.gridx = 0;
+        c.gridy = 0;        
+        cont.add(back, c);      
+        c.fill = GridBagConstraints.WEST;
+        c.gridx = 2;
+        c.gridy = 0;
+        cont.add(forward, c);
+        /*cont.add(timeline, BorderLayout.SOUTH);
+        cont.add(play, BorderLayout.EAST);
+        cont.add(back, BorderLayout.EAST);
+        cont.add(forward, BorderLayout.EAST);*/
+        /*final JPanel controlsPanel=new JPanel();
+        controlsPanel.setLayout(new FlowLayout());
+        
+        controlsPanel.add(play);
+        controlsPanel.add(back);
+        controlsPanel.add(forward);*/
+    	
+    	int result = new ExtendedDialog(
                 Main.parent,
                 "VideoProcessor Plugin",
-                new String[] {"OK", "Cancel"})
+                new String[] {"Process", "Cancel"})
             .setButtonIcons(new String[] {"ok.png", "cancel.png"})
             .setContent(cont)
             .setCancelButton(2)
@@ -122,145 +140,34 @@ class VideoProcessingAction extends AbstractAction implements LayerAction {
 
         if (result != 1)
             return;
-    
-        final boolean keep_backup = backups.isSelected();
-       
-        Main.pref.put(KEEP_BACKUP, keep_backup);
+        
        
         
-        Main.worker.execute(new VideoProcessingRunnable(images,
-        		keep_backup));
+        /*final CanvasFrame canvas = new CanvasFrame("Demo");
+        canvas.setSize(400, 400);
+        canvas.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);*/
+        Main.worker.execute(new VideoProcessingRunnable(images));
+       // Main.worker.execute(cvNamedWindow("hello"));
     }
     
     static class VideoProcessingRunnable extends PleaseWaitRunnable {
-        final private List<ImageEntry> images;
-        final private boolean keep_backup;       
-
-        private boolean canceled = false;
-        private Boolean override_backup = null;
-
-        private File fileFrom;
-        private File fileTo;
-        private File fileDelete;
+        final private List<ImageEntry> images;       
+        private boolean canceled = false;     
         
-        public VideoProcessingRunnable(List<ImageEntry> images, 
-        		boolean keep_backup) {
-            super("VideoProcessor");
+        public VideoProcessingRunnable(List<ImageEntry> images) {
+            super("Videoprocessor");
             this.images = images;
-            this.keep_backup = keep_backup;
-            
-        }
+        }    
         
         @Override
-        protected void realRun(){        	
-        	
+        protected void realRun(){
         	for (int i = 0; i < images.size(); ++i){
         		if(canceled) return;
-        	        	
-        	ImageEntry e = images.get(0);
-        	ImageDisplay disp = new ImageDisplay();
-        	disp.setImage(e.getFile(), 1);
-        	//IplImage img = cvLoadImage(e.getFile().getAbsolutePath(), 
-        		//	CV_LOAD_IMAGE_GRAYSCALE);
-        	//final CanvasFrame canvas = new CanvasFrame("Demo");
-        	//canvas.showImage(img);
-        	//cvShowImage("image", img);
-        	
-        	fileFrom = null;
-        	fileTo = null;
-        	fileDelete = null;     
-        	}
-        }
+        		ImageEntry e = images.get(i);
+        		progressMonitor.worked(1);
+        		}  
+        	}      
         
-        private void chooseFiles(File file) throws IOException {
-            if (debug) {
-                System.err.println("f: "+file.getAbsolutePath());
-            }
-
-            if (!keep_backup) {
-                chooseFilesNoBackup(file);
-                return;
-            }
-            
-            File fileBackup = new File(file.getParentFile(),file.getName()+"_");
-           if (fileBackup.exists()) {
-                confirm_override();
-                if (canceled)
-                    return;
-
-                if (override_backup) {
-                    if (!fileBackup.delete())
-                        throw new IOException("File could not be deleted!");
-                } else {
-                    chooseFilesNoBackup(file);
-                    return;
-                }
-            }
-            if (!file.renameTo(fileBackup))
-                throw new IOException("Could not rename file!");
-
-            fileFrom = fileBackup;
-            fileTo = file;
-            fileDelete = null;
-        }
-        
-        private void chooseFilesNoBackup(File file) throws IOException {
-            File fileTmp;
-            
-            fileTmp = new File(file.getParentFile(), "img" + UUID.randomUUID() 
-            		+ ".jpg");
-            if (debug) {
-                System.err.println("TMP: "+fileTmp.getAbsolutePath());
-            }
-            if (! file.renameTo(fileTmp))
-                throw new IOException("Could not rename file!");
-
-            fileFrom = fileTmp;
-            fileTo = file;
-            fileDelete = fileTmp;
-        }
-        
-        private void confirm_override() {
-            if (override_backup != null)
-                return;
-            try {
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    @Override
-					public void run() {
-                        JLabel l = new JLabel("<html><h3>There are old backup files in the image directory!</h3>");
-                        l.setIcon(UIManager.getIcon("OptionPane.warningIcon"));
-                        int override = new ExtendedDialog(
-                                progressMonitor.getWindowParent(),
-                                "Override old backup files?",
-                                new String[] {"Cancel", "Keep old backups and continue", "Override"})
-                            .setButtonIcons(new String[] {"cancel.png", "ok.png", "dialogs/delete.png"})
-                            .setContent(l)
-                            .setCancelButton(1)
-                            .setDefaultButton(2)
-                            .showDialog()
-                            .getValue();
-                        if (override == 2) {
-                            override_backup = false;
-                        } else if (override == 3) {
-                            override_backup = true;
-                        } else {
-                            canceled = true;
-                        }
-                    }
-                });
-            } catch (Exception e) {
-                System.err.println(e);
-                canceled = true;
-            }
-        }
-        
-        private void cleanupFiles() throws IOException {
-            if (fileDelete != null) {
-                if (!fileDelete.delete())
-                    throw new IOException("Could not delete temporary file!");
-            }
-        }        
-       
         @Override
         protected void finish() {
         }
@@ -297,4 +204,6 @@ class VideoProcessingAction extends AbstractAction implements LayerAction {
    	public boolean supportLayers(List<Layer> layers) {
            return layers.size() == 1 && layers.get(0) instanceof GeoImageLayer;
        }
+       
+    
    }
