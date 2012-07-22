@@ -8,3 +8,7 @@ Using Plugin:
 *Right Click on Image Layer and select 'Process Image'.
 *It will list the imported images.
 *Further process will be added.
+
+======
+Added class for cascadeDetect and minor UI changes.
+Still no image processing can be done as I am yet to successfully integrate opencv libs. 

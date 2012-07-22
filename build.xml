@@ -78,12 +78,12 @@
     -->
     <target name="dist" depends="compile">
         <echo message="creating ${ant.project.name}.jar ... "/>
-        <copy todir="${plugin.build.dir}/lib">
+    	<!-- <copy todir="${plugin.build.dir}/lib">
             <fileset dir="lib"/>
-        </copy>
+       
     	<copy todir="${plugin.build.dir}/com">
     	            <fileset dir="com"/>
-    	        </copy>
+    	        </copy> </copy>-->
         <copy todir="${plugin.build.dir}">
             <fileset dir=".">
                 <include name="README"/>

@@ -83,7 +83,7 @@ class VideoProcessingAction extends AbstractAction implements LayerAction {
     	
     	for(ImageEntry e : images){
     		listModel.addElement(e.getFile().getAbsolutePath());
-    		cascadeDetect(e);
+    		//cascadeDetect(e);
     	}
     	
     	ImageViewerDialog.showImage(layer, images.get(0) );;
@@ -98,8 +98,19 @@ class VideoProcessingAction extends AbstractAction implements LayerAction {
         c.gridy = 0;
     	cont.add(scroll, c);  
     	
-    	 //cvNamedWindow("hello");
-        //cvWaitKey(0);
+    	/*
+    	IplImage src = cvLoadImage(images.get(0).getFile().getAbsolutePath());
+    	cvNamedWindow("Image");
+    	cvShowImage("Image", src);
+    	cvResizeWindow("Image", 400, 400);
+        cvWaitKey(0);
+        cvDestroyWindow("Image");*/
+        
+        final CanvasFrame canvas = new CanvasFrame("Demo");
+        canvas.setSize(400, 400);
+        cvWaitKey(0)
+        canvas.
+        //canvas.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
     	
     	/*timeline = new JSlider(0,500,0);
         timeline.setMajorTickSpacing(5);
@@ -146,7 +157,7 @@ class VideoProcessingAction extends AbstractAction implements LayerAction {
         /*final CanvasFrame canvas = new CanvasFrame("Demo");
         canvas.setSize(400, 400);
         canvas.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);*/
-        Main.worker.execute(new VideoProcessingRunnable(images));
+        //Main.worker.execute(new VideoProcessingRunnable(images));
        // Main.worker.execute(cvNamedWindow("hello"));
     }
     

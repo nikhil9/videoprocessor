@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.7.1
+Created-By: 19.0-b09 (Sun Microsystems Inc.)
+Main-Class: com.googlecode.javacv.JavaCV
+Class-Path: javacpp.jar javacv-linux-x86.jar javacv-linux-x86_64.jar j
+ avacv-macosx-x86.jar javacv-macosx-x86_64.jar javacv-windows-x86.jar 
+ javacv-windows-x86_64.jar
+
+Name: com/googlecode/javacv/
+Implementation-Title: JavaCV
+Implementation-Vendor: Samuel Audet
+Implementation-Version: 201203291145
+Specification-Title: JavaCV
+Specification-Vendor: Samuel Audet
+Specification-Version: 201203291145
+
