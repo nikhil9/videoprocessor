@@ -3,12 +3,11 @@ README
 JOSM Plugin based on photo_geotagging plugin. I will use this plugin to integrate image processing.
 Requiers plugin development environment to build it from code. Refer http://josm.openstreetmap.de/wiki/DevelopersGuide/DevelopingPlugins
 Using Plugin:
-*.jar file included in repo can be used.
-*Import images and corelate them with gpx track. 
+*.jar file included in /dist can be used.
+*Import images and correlate them with gpx track. 
 *Right Click on Image Layer and select 'Process Image'.
 *It will list the imported images.
 *Further process will be added.
 
 ======
-Added class for cascadeDetect and minor UI changes.
-Still no image processing can be done as I am yet to successfully integrate opencv libs. 
+opencv binaries are added with demo interface for testing. 
