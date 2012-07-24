@@ -23,7 +23,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.*;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -56,11 +56,10 @@ import com.googlecode.javacv.cpp.opencv_objdetect.CascadeClassifier;
 import com.googlecode.javacv.CanvasFrame;
 import imageProcessing.*;
 
+
 class VideoProcessingAction extends AbstractAction implements LayerAction {
 	
 	final static boolean debug = false;
-	private JSlider timeline;
-	private JButton play,back,forward;
 	
 	public VideoProcessingAction() {
         super("Process Images");
@@ -74,91 +73,21 @@ class VideoProcessingAction extends AbstractAction implements LayerAction {
     	for (ImageEntry e : layer.getImages()){   		
     			images.add(e);   		
     	}
+    	    	    	
+    	/*for(ImageEntry e : images){
+    		listModel.addElement(e.getFile().getAbsolutePath());    		
+    	}*/
     	
-    	final JPanel cont = new JPanel(new GridBagLayout());
-    	
-    	GridBagConstraints c = new GridBagConstraints();
-    	DefaultListModel listModel = new DefaultListModel();
-    	DecimalFormat dFormatter = new DecimalFormat ("###0.000000");
-    	
-    	for(ImageEntry e : images){
-    		listModel.addElement(e.getFile().getAbsolutePath());
-    		//cascadeDetect(e);
-    	}
-    	
-    	ImageViewerDialog.showImage(layer, images.get(0) );;
-    	        
-    	
-    	Canvas can = new Canvas(); 
-    	JList entryList = new JList(listModel);
-    	JScrollPane scroll = new JScrollPane(entryList);
-    	scroll.setPreferredSize(new Dimension(500, 250));
-    	c.fill = GridBagConstraints.CENTER ;
-        c.gridx = 1;
-        c.gridy = 0;
-    	cont.add(scroll, c);  
-    	
-    	/*
-    	IplImage src = cvLoadImage(images.get(0).getFile().getAbsolutePath());
-    	cvNamedWindow("Image");
-    	cvShowImage("Image", src);
-    	cvResizeWindow("Image", 400, 400);
-        cvWaitKey(0);
-        cvDestroyWindow("Image");*/
-        
-        final CanvasFrame canvas = new CanvasFrame("Demo");
-        canvas.setSize(400, 400);
-        cvWaitKey(0)
-        canvas.
-        //canvas.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
-    	
-    	/*timeline = new JSlider(0,500,0);
-        timeline.setMajorTickSpacing(5);
-        timeline.setMinorTickSpacing(2);
-        timeline.setPaintTicks(true);
-        play= new JButton("play");*/
-        back= new JButton("<");
-        forward= new JButton(">");
-        c.fill = GridBagConstraints.EAST;
-        c.gridx = 0;
-        c.gridy = 0;        
-        cont.add(back, c);      
-        c.fill = GridBagConstraints.WEST;
-        c.gridx = 2;
-        c.gridy = 0;
-        cont.add(forward, c);
-        /*cont.add(timeline, BorderLayout.SOUTH);
-        cont.add(play, BorderLayout.EAST);
-        cont.add(back, BorderLayout.EAST);
-        cont.add(forward, BorderLayout.EAST);*/
-        /*final JPanel controlsPanel=new JPanel();
-        controlsPanel.setLayout(new FlowLayout());
-        
-        controlsPanel.add(play);
-        controlsPanel.add(back);
-        controlsPanel.add(forward);*/
-    	
-    	int result = new ExtendedDialog(
-                Main.parent,
-                "VideoProcessor Plugin",
-                new String[] {"Process", "Cancel"})
-            .setButtonIcons(new String[] {"ok.png", "cancel.png"})
-            .setContent(cont)
-            .setCancelButton(2)
-            .setDefaultButton(1)
-            .showDialog()
-            .getValue();
-
-        if (result != 1)
-            return;
-        
+    	final Processor frame = new Processor();
+    	frame.pack();
+    	//Mark for display in the center of the screen
+    	frame.setLocationRelativeTo(null);
+    	//Exit application when frame is closed.
+    	//frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+    	frame.setVisible(true);
+				
+        Main.worker.execute(new VideoProcessingRunnable(images));
        
-        
-        /*final CanvasFrame canvas = new CanvasFrame("Demo");
-        canvas.setSize(400, 400);
-        canvas.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);*/
-        //Main.worker.execute(new VideoProcessingRunnable(images));
-       // Main.worker.execute(cvNamedWindow("hello"));
     }
     
     static class VideoProcessingRunnable extends PleaseWaitRunnable {
