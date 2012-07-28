@@ -79,6 +79,7 @@ class VideoProcessingAction extends AbstractAction implements LayerAction {
     	}*/
     	
     	final Processor frame = new Processor();
+    	frame.getImageEntry(images);
     	frame.pack();
     	//Mark for display in the center of the screen
     	frame.setLocationRelativeTo(null);
@@ -86,7 +87,7 @@ class VideoProcessingAction extends AbstractAction implements LayerAction {
     	//frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     	frame.setVisible(true);
 				
-        Main.worker.execute(new VideoProcessingRunnable(images));
+        //Main.worker.execute(new VideoProcessingRunnable(images));
        
     }
     
